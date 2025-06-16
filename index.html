@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgroCare</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <style>
+    /* Basic Body Font */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Navbar Styling */
+    .navbar {
+      background-color: #4CAF50; /* Green background */
+    }
+
+    /* Navbar Brand, Links, and Icons Color */
+    .navbar .navbar-brand,
+    .navbar .nav-link,
+    .navbar .navbar-toggler-icon,
+    .navbar .bi {
+      color: #fff !important; /* White color for all elements in navbar */
+    }
+
+    /* Hero Section Styling */
+    .hero {
+      background: url('https://www.shutterstock.com/image-illustration/wide-horizontal-green-gradient-abstract-260nw-2152179269.jpg') center center / cover no-repeat;
+      height: 400px; /* Fixed height */
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-shadow: 2px 2px 4px #000; /* Text shadow for readability */
+    }
+
+    /* General Section Padding */
+    .section {
+      padding: 60px 0; /* Vertical padding for content sections */
+    }
+
+    /* Footer Styling */
+    .footer {
+      background: #333;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* Fixed Sidebar for Desktop (initially collapsed) */
+    .sidebar-fixed {
+      position: fixed;
+      top: 56px; /* Position below the navbar */
+      left: 0;
+      height: calc(100% - 56px); /* Full height minus navbar height */
+      width: 60px; /* Collapsed width */
+      background-color: #f8f9fa; /* Light background */
+      overflow-x: hidden; /* Hide horizontal scrollbar */
+      transition: width 0.3s ease-in-out; /* Smooth transition for width change */
+      z-index: 1000; /* Ensure it stays on top */
+      border-right: 1px solid #ccc; /* Right border */
+    }
+
+    /* Expand sidebar on hover for desktop */
+    .sidebar-fixed:hover {
+      width: 200px; /* Expanded width */
+    }
+
+    /* Styling for sidebar links */
+    .sidebar-fixed a {
+      padding: 12px 10px;
+      text-decoration: none;
+      display: flex; /* Use flexbox for icon and label alignment */
+      align-items: center;
+      color: #333; /* Dark text color */
+      white-space: nowrap; /* Prevent text wrapping */
+      transition: all 0.3s ease-in-out; /* Smooth transition for all properties */
+      justify-content: center; /* Center icons horizontally by default */
+    }
+
+    /* Adjust alignment when sidebar expands on hover */
+    .sidebar-fixed:hover a {
+      justify-content: flex-start; /* Align to start when text appears */
+    }
+
+    /* Styling for sidebar icons */
+    .sidebar-fixed a i {
+      font-size: 1.2rem;
+      width: 30px; /* Fixed width for consistent icon alignment */
+      flex-shrink: 0; /* Prevent icon from shrinking */
+    }
+
+    /* Styling for sidebar labels (initially hidden) */
+    .sidebar-fixed .label {
+      display: none; /* Hidden by default */
+      opacity: 0; /* Also set opacity for smooth fade-in */
+      transition: opacity 0.3s ease-in-out; /* Smooth fade-in/out */
+      margin-left: 10px; /* Space between icon and label */
+    }
+
+    /* Show label on sidebar hover */
+    .sidebar-fixed:hover .label {
+      display: inline-block; /* Show the label as inline-block */
+      opacity: 1; /* Fully visible on hover */
+    }
+
+    /* Main Content Area Styling */
+    .main-content {
+      transition: margin-left 0.3s ease-in-out; /* Smooth transition for margin */
+    }
+
+    /* Media query for Desktop view (min-width: 768px) */
+    @media (min-width: 768px) {
+      .main-content {
+        margin-left: 60px; /* Initial margin for closed sidebar */
+      }
+      /* Adjust main content margin when sidebar expands */
+      .sidebar-fixed:hover ~ .main-content {
+        margin-left: 200px; /* Expanded sidebar margin */
+      }
+    }
+
+    /* Media query for Mobile view (max-width: 767.98px) */
+    @media (max-width: 767.98px) {
+      .sidebar-fixed {
+        display: none; /* Hide desktop sidebar on mobile */
+      }
+      .main-content {
+        margin-left: 0; /* No left margin on mobile */
+      }
+    }
+
+    /* Post Card Styling */
+    .post-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+      text-align: left; /* Align text within card to left */
+    }
+
+    .post-card .post-thumbnail {
+      width: 100%;
+      height: 180px; /* Fixed height for consistency */
+      object-fit: cover; /* Cover the area, cropping if necessary */
+      border-radius: 4px; /* Slightly rounded corners for image */
+      margin-bottom: 15px; /* Space below image */
+    }
+
+    /* Post Card Icon Color */
+    .post-card h5 i {
+      color: #4CAF50; /* Green color for icons in post cards */
+      margin-right: 8px; /* Space between icon and text */
+    }
+
+    /* Dropdown Menu Minimum Width */
+    .dropdown-menu {
+      min-width: 150px;
+    }
+
+    /* Offcanvas (Mobile Sidebar) specific styling */
+    .offcanvas-body ul {
+      list-style: none; /* Remove bullet points */
+      padding-left: 0; /* Remove default padding */
+    }
+
+    .offcanvas-body ul li {
+      margin-bottom: 15px; /* Spacing between list items */
+    }
+
+    /* Styling for links within offcanvas */
+    .offcanvas-body ul li a.nav-link {
+      display: flex; /* Use flexbox to align icon and text horizontally */
+      align-items: center; /* Center items vertically */
+      color: #333; /* Dark text color for readability */
+      padding: 12px 10px; /* Add padding for better touch targets */
+    }
+
+    /* Styling for icons within offcanvas links */
+    .offcanvas-body ul li a.nav-link i {
+      font-size: 1.2rem; /* Consistent icon size */
+      margin-right: 10px; /* Space between icon and text */
+      width: 30px; /* Fixed width for consistent icon alignment */
+      flex-shrink: 0; /* Prevent icon from shrinking */
+    }
+
+    /* Styling for labels within offcanvas links */
+    .offcanvas-body ul li a.nav-link .label {
+      opacity: 1; /* Always visible in offcanvas */
+      display: inline-block; /* Ensure it behaves correctly with flex */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar for Desktop View -->
+<div class="sidebar-fixed d-none d-md-block">
+  <a href="#home"><i class="bi bi-house-door-fill"></i> <span class="label">Home</span></a>
+  <a href="#services"><i class="bi bi-gear-fill"></i> <span class="label">Services</span></a>
+  <a href="#about"><i class="bi bi-info-circle-fill"></i> <span class="label">About</span></a>
+  <a href="#posts"><i class="bi bi-journal-text"></i> <span class="label">Posts</span></a>
+  <a href="#contact"><i class="bi bi-envelope-fill"></i> <span class="label">Contact</span></a>
+</div>
+
+<!-- Offcanvas Sidebar for Mobile View -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+      <li class="nav-item">
+        <a class="nav-link" href="#home" data-bs-dismiss="offcanvas">
+          <i class="bi bi-house-door-fill"></i> <span class="label">Home</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#services" data-bs-dismiss="offcanvas">
+          <i class="bi bi-gear-fill"></i> <span class="label">Services</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#posts" data-bs-dismiss="offcanvas">
+          <i class="bi bi-journal-text"></i> <span class="label">Posts</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#about" data-bs-dismiss="offcanvas">
+          <i class="bi bi-info-circle-fill"></i> <span class="label">About</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#contact" data-bs-dismiss="offcanvas">
+          <i class="bi bi-envelope-fill"></i> <span class="label">Contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Main Navigation Bar -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container-fluid px-3">
+    <!-- Hamburger button for mobile, triggers offcanvas sidebar -->
+    <button class="btn d-md-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-label="Toggle navigation">
+      <i class="bi bi-list text-white fs-4"></i>
+    </button>
+
+    <!-- Brand Logo/Name -->
+    <a class="navbar-brand me-auto" href="#">AgroCare</a>
+
+    <!-- Right-side icons: Notification and User Dropdown -->
+    <div class="d-flex align-items-center ms-auto">
+      <!-- Notification Icon -->
+      <a href="#" class="text-white me-3 position-relative">
+        <i class="bi bi-bell-fill fs-5"></i>
+        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+          <span class="visually-hidden">New alerts</span>
+        </span>
+      </a>
+
+      <!-- User Dropdown Menu (only icon visible) -->
+      <div class="dropdown">
+        <a class="text-white" href="#" role="button" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-circle fs-5"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
+          <li><a class="dropdown-item" href="#">Login</a></li>
+          <li><a class="dropdown-item" href="#">Register</a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a class="dropdown-item" href="#">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Page Content Area -->
+<div class="main-content">
+  <!-- Hero Section -->
+  <div class="hero" id="home">
+    <div class="text-center">
+      <h1>Welcome to AgroCare</h1>
+      <p>Your smart farming assistant</p>
+    </div>
+  </div>
+
+  <!-- Services Section -->
+  <section class="section" id="services">
+    <div class="container">
+      <h2 class="text-center mb-5">Our Services</h2>
+      <div class="row text-center">
+        <!-- Service 1: Crop Planning -->
+        <div class="col-md-4 mb-4">
+          <i class="bi bi-clipboard-data fs-1 text-success"></i>
+          <h4>Crop Planning</h4>
+          <p>Custom recommendations based on your soil and climate.</p>
+        </div>
+        <!-- Service 2: Agri Advice -->
+        <div class="col-md-4 mb-4">
+          <i class="bi bi-chat-dots fs-1 text-success"></i>
+          <h4>Agri Advice</h4>
+          <p>Expert guidance via WhatsApp and SMS.</p>
+        </div>
+        <!-- Service 3: Sell Produce -->
+        <div class="col-md-4 mb-4">
+          <i class="bi bi-bag-check fs-1 text-success"></i>
+          <h4>Sell Produce</h4>
+          <p>Connect with markets to sell your harvest efficiently.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest Farming Posts Section -->
+  <section class="section bg-light" id="posts">
+    <div class="container">
+      <h2 class="text-center mb-5">Latest Farming Posts</h2>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="post-card">
+            <!-- Thumbnail Image for Post 1 -->
+            <img src="https://placehold.co/600x300/a3d8a5/000000?text=June+Crops" alt="Best Crops for June" class="img-fluid post-thumbnail">
+            <h5><i class="bi bi-sun-fill"></i> Best Crops for June</h5>
+            <p>Paddy, soybean, and maize thrive in June's monsoon weather.</p>
+            <a href="#" class="btn btn-outline-success btn-sm">Read More</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="post-card">
+            <!-- Thumbnail Image for Post 2 -->
+            <img src="https://placehold.co/600x300/a3d8a5/000000?text=Irrigation+Tips" alt="Improve Irrigation" class="img-fluid post-thumbnail">
+            <h5><i class="bi bi-droplet-fill"></i> Improve Irrigation</h5>
+            <p>Drip and sprinkler systems conserve water and improve yield.</p>
+            <a href="#" class="btn btn-outline-success btn-sm">Read More</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="post-card">
+            <!-- Thumbnail Image for Post 3 -->
+            <img src="https://placehold.co/600x300/a3d8a5/000000?text=Pest+Control" alt="Natural Pest Control" class="img-fluid post-thumbnail">
+            <h5><i class="bi bi-bug-fill"></i> Natural Pest Control</h5>
+            <p>Neem spray and intercropping reduce chemical usage.</p>
+            <a href="#" class="btn btn-outline-success btn-sm">Read More</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section class="section" id="about">
+    <div class="container">
+      <h2 class="text-center mb-5">About Us</h2>
+      <p class="text-center">AgroCare empowers farmers with modern tools, crop guidance, and expert support to increase productivity and sustainability.</p>
+    </div>
+  </section>
+
+  <!-- Contact Us Section -->
+  <section class="section bg-light" id="contact">
+    <div class="container">
+      <h2 class="text-center mb-5">Contact Us</h2>
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <form>
+            <div class="mb-3">
+              <label for="fullName" class="form-label">Full Name</label>
+              <input type="text" class="form-control" id="fullName" placeholder="Your Name" />
+            </div>
+            <div class="mb-3">
+              <label for="phoneNumber" class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="phoneNumber" placeholder="Mobile Number" />
+            </div>
+            <div class="mb-3">
+              <label for="message" class="form-label">Message</label>
+              <textarea class="form-control" id="message" rows="4" placeholder="How can we help you?"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    &copy; 2025 AgroCare. All rights reserved.
+  </footer>
+</div>
+
+</body>
+</html>
