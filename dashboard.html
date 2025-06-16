@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgroCare Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <style>
+    html, body {
+      height: 100%;
+      overflow-x: hidden; /* Crucial: Prevents horizontal scrolling caused by layout shifts */
+      margin: 0; /* Ensure no default margin */
+      padding: 0; /* Ensure no default padding */
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9; /* Light grey background for admin */
+    }
+
+    /* Admin Navbar Styling */
+    .admin-navbar {
+      background-color: #28a745; /* Darker green for admin header */
+      color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 1030; /* Higher z-index than sidebar for sticky effect */
+      position: sticky; /* Make navbar sticky */
+      top: 0;
+      width: 100%;
+    }
+
+    .admin-navbar .navbar-brand {
+      color: #fff !important;
+      font-weight: bold;
+    }
+
+    .admin-navbar .nav-link,
+    .admin-navbar .bi {
+      color: #fff !important;
+    }
+
+    /* Admin Sidebar Styling - Mimicking Website Sidebar */
+    .admin-sidebar {
+      position: fixed;
+      top: 56px; /* Start precisely below the navbar */
+      left: 0;
+      width: 60px; /* Collapsed width, like website */
+      height: calc(100vh - 56px); /* Full height minus navbar height */
+      background-color: #343a40; /* Dark background for admin sidebar */
+      color: #fff;
+      transition: width 0.3s ease-in-out;
+      z-index: 1020;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      overflow-y: auto; /* Enable vertical scrolling if sidebar content exceeds height */
+    }
+
+    /* Expand sidebar on hover for desktop */
+    .admin-sidebar:hover {
+      width: 250px; /* Expanded width */
+    }
+
+    /* Admin Sidebar Links */
+    .admin-sidebar .nav-link {
+      color: #adb5bd !important; /* Lighter text for links */
+      padding: 12px 10px; /* Consistent padding with website */
+      display: flex;
+      align-items: center;
+      transition: background-color 0.2s, color 0.2s, padding-left 0.2s, justify-content 0.3s ease-in-out;
+      justify-content: center; /* Center icons horizontally when collapsed */
+      text-decoration: none; /* Remove default underline */
+    }
+
+    /* Adjust alignment when sidebar expands on hover */
+    .admin-sidebar:hover .nav-link {
+      justify-content: flex-start; /* Align to start when text appears */
+      gap: 10px; /* Add space between icon and label when expanded */
+    }
+
+    /* Admin Sidebar Icons */
+    .admin-sidebar .nav-link i {
+      /* Removed margin-right: 10px here to allow proper centering when label is hidden */
+      font-size: 1.1rem;
+      width: 30px; /* Fixed width for consistent icon alignment */
+      flex-shrink: 0; /* Prevent icon from shrinking */
+    }
+
+    /* Styling for sidebar labels (initially hidden and collapsed) */
+    .admin-sidebar .label {
+      opacity: 0;
+      width: 0; /* Collapse width to 0 when hidden */
+      overflow: hidden; /* Hide overflowing text */
+      white-space: nowrap; /* Prevent text wrapping */
+      transition: opacity 0.3s ease-in-out, width 0.3s ease-in-out; /* Smooth transition for both */
+    }
+
+    /* Show label on sidebar hover */
+    .admin-sidebar:hover .label {
+      opacity: 1; /* Fully visible on hover */
+      width: auto; /* Allow width to expand to content */
+    }
+
+    /* Main Content Area for Admin Dashboard */
+    .admin-main-content {
+      margin-left: 0; /* Default to 0, controlled by media query */
+      padding: 20px;
+      transition: margin-left 0.3s ease-in-out;
+      min-height: calc(100vh - 56px); /* Ensure content pushes footer down */
+    }
+
+    /* Media query for Desktop view (min-width: 768px) */
+    @media (min-width: 768px) {
+      .admin-main-content {
+        margin-left: 60px; /* Initial margin matches collapsed sidebar on desktop */
+      }
+      /* Push content when sidebar expands */
+      .admin-sidebar:hover ~ .admin-main-content {
+        margin-left: 250px; /* Matches expanded sidebar width */
+      }
+    }
+
+    /* Toggle behavior for responsive sidebar (Offcanvas handles width directly) */
+    @media (max-width: 767.98px) {
+      .admin-sidebar {
+        display: none; /* Hide desktop sidebar entirely on mobile */
+      }
+      /* Offcanvas takes care of itself and overlays content */
+    }
+
+    /* Card styling for dashboard widgets */
+    .dashboard-card .card-body {
+      padding: 1.5rem;
+    }
+
+    .dashboard-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .list-group-item:first-child {
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
+
+    /* Offcanvas Specific Styles for consistent look */
+    .offcanvas-header .btn-close {
+        /* Using Bootstrap's btn-close-white class directly in HTML */
+    }
+    .offcanvas-body {
+        padding-top: 20px; /* Adjust padding for offcanvas content */
+    }
+    .offcanvas-body .nav-link {
+        color: #adb5bd !important; /* Lighter text for links */
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.2s, color 0.2s;
+        text-decoration: none; /* Remove default underline */
+    }
+    .offcanvas-body .nav-link:hover,
+    .offcanvas-body .nav-link.active {
+        background-color: #495057;
+        color: #fff !important;
+        border-left: 3px solid #28a745;
+        padding-left: 12px;
+    }
+    .offcanvas-body .nav-link i {
+        margin-right: 10px; /* Still needed for offcanvas as labels are always visible */
+        font-size: 1.1rem;
+        width: 30px;
+        flex-shrink: 0;
+    }
+    .offcanvas-body .label {
+        opacity: 1; /* Always visible in offcanvas */
+        visibility: visible; /* Always visible in offcanvas */
+        display: inline-block;
+        width: auto; /* Ensure labels take up full width in offcanvas */
+    }
+
+    /* Hide all content sections by default except the active one (managed by JS) */
+    .content-section {
+        display: none;
+        animation: fadeIn 0.5s ease-out; /* Add a fade-in animation */
+    }
+
+    .content-section.active {
+        display: block;
+    }
+
+    /* Fade-in animation for content sections */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Specific styles for showing/hiding forms */
+    .form-container {
+        display: none; /* Hidden by default */
+        animation: fadeIn 0.5s ease-out;
+    }
+    .table-container {
+        display: block; /* Visible by default */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Admin Navbar -->
+<nav class="navbar admin-navbar navbar-expand-lg sticky-top">
+  <div class="container-fluid">
+    <button class="btn d-md-none me-2 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebarOffcanvas" aria-controls="adminSidebarOffcanvas" aria-label="Toggle sidebar">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+    <a class="navbar-brand" href="#">AgroCare Admin</a>
+
+    <div class="ms-auto d-flex align-items-center">
+      <!-- Admin Profile Dropdown -->
+      <div class="dropdown">
+        <a class="text-white" href="#" role="button" id="adminDropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-circle fs-5"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdownUser">
+          <li><a class="dropdown-item" href="#">Profile</a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a class="dropdown-item" href="#">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Admin Sidebar (Desktop) -->
+<div class="admin-sidebar d-none d-md-block" id="adminSidebarDesktop">
+  <ul class="nav flex-column mt-3">
+    <li class="nav-item">
+      <a class="nav-link active" href="#dashboard-overview-section">
+        <i class="bi bi-speedometer2"></i> <span class="label">Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#user-management-section">
+        <i class="bi bi-people"></i> <span class="label">User Management</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#post-management-section">
+        <i class="bi bi-journal-text"></i> <span class="label">Post Management</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#service-management-section">
+        <i class="bi bi-gear"></i> <span class="label">Service Management</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#analytics-section">
+        <i class="bi bi-graph-up"></i> <span class="label">Analytics</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#settings-section">
+        <i class="bi bi-sliders"></i> <span class="label">Settings</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
+<!-- Offcanvas Admin Sidebar for Mobile -->
+<div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="adminSidebarOffcanvas" aria-labelledby="offcanvasAdminLabel">
+  <div class="offcanvas-header bg-dark">
+    <h5 class="offcanvas-title text-white" id="offcanvasAdminLabel">AgroCare Admin</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link text-white active" href="#dashboard-overview-section" data-bs-dismiss="offcanvas">
+          <i class="bi bi-speedometer2"></i> <span class="label">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#user-management-section" data-bs-dismiss="offcanvas">
+          <i class="bi bi-people"></i> <span class="label">User Management</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#post-management-section" data-bs-dismiss="offcanvas">
+          <i class="bi bi-journal-text"></i> <span class="label">Post Management</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#service-management-section" data-bs-dismiss="offcanvas">
+          <i class="bi bi-gear"></i> <span class="label">Service Management</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#analytics-section" data-bs-dismiss="offcanvas">
+          <i class="bi bi-graph-up"></i> <span class="label">Analytics</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#settings-section" data-bs-dismiss="offcanvas">
+          <i class="bi bi-sliders"></i> <span class="label">Settings</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Main Admin Content Area -->
+<div class="admin-main-content" id="adminMainContent">
+  <!-- Dashboard Overview Section -->
+  <section class="mb-5 content-section active" id="dashboard-overview-section">
+    <h2 class="mb-4">Dashboard Overview</h2>
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm h-100 dashboard-card">
+          <div class="card-body text-center">
+            <i class="bi bi-people-fill text-primary dashboard-icon"></i>
+            <h5 class="card-title text-muted">Total Users</h5>
+            <p class="card-text fs-1 fw-bold text-dark">1,234</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm h-100 dashboard-card">
+          <div class="card-body text-center">
+            <i class="bi bi-journal-check text-success dashboard-icon"></i>
+            <h5 class="card-title text-muted">Total Posts</h5>
+            <p class="card-text fs-1 fw-bold text-dark">87</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm h-100 dashboard-card">
+          <div class="card-body text-center">
+            <i class="bi bi-hdd-fill text-info dashboard-icon"></i>
+            <h5 class="card-title text-muted">Active Services</h5>
+            <p class="card-text fs-1 fw-bold text-dark">3</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm h-100 dashboard-card">
+          <div class="card-body text-center">
+            <i class="bi bi-chat-dots-fill text-warning dashboard-icon"></i>
+            <h5 class="card-title text-muted">New Inquiries</h5>
+            <p class="card-text fs-1 fw-bold text-dark">12</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white text-dark fw-bold">Recent Activity</div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                New user registered: **Jane Doe**
+                <span class="badge bg-secondary text-white">5 min ago</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                Post **"Natural Pest Control"** updated
+                <span class="badge bg-secondary text-white">1 hour ago</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                New inquiry from **farmersupport@example.com**
+                <span class="badge bg-secondary text-white">3 hours ago</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                Service **"Crop Planning"** metrics updated
+                <span class="badge bg-secondary text-white">1 day ago</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                User **Mark Green** deleted an account
+                <span class="badge bg-secondary text-white">2 days ago</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Management Section -->
+  <section class="mb-5 content-section" id="user-management-section">
+    <h2 class="mb-4">User Management</h2>
+    <div class="card shadow-sm">
+      <div class="card-header bg-white text-dark d-flex justify-content-between align-items-center">
+        Users List
+        <button class="btn btn-sm btn-success" onclick="toggleUserForm(true)"><i class="bi bi-plus-lg me-1"></i> Add New User</button>
+      </div>
+      <div class="card-body">
+        <!-- Add User Form -->
+        <div id="addUserForm" class="form-container mb-4">
+          <h5 class="mb-3">Add New User</h5>
+          <form>
+            <div class="mb-3">
+              <label for="userName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="userName" placeholder="User's Full Name" required />
+            </div>
+            <div class="mb-3">
+              <label for="userEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="userEmail" placeholder="user@example.com" required />
+            </div>
+            <div class="mb-3">
+              <label for="userRole" class="form-label">Role</label>
+              <select class="form-select" id="userRole" required>
+                <option selected disabled value="">Select a role...</option>
+                <option>Farmer</option>
+                <option>Expert</option>
+                <option>Admin</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="userPassword" class="form-label">Password</label>
+              <input type="password" class="form-control" id="userPassword" required />
+            </div>
+            <button type="submit" class="btn btn-primary me-2">Add User</button>
+            <button type="button" class="btn btn-secondary" onclick="toggleUserForm(false)">Cancel</button>
+          </form>
+        </div>
+
+        <!-- Users List Table -->
+        <div id="usersTable" class="table-container">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>John Doe</td>
+                  <td>john.doe@example.com</td>
+                  <td>Farmer</td>
+                  <td><span class="badge bg-success">Active</span></td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>Jane Smith</td>
+                  <td>jane.smith@example.com</td>
+                  <td>Expert</td>
+                  <td><span class="badge bg-success">Active</span></td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td>Alice Brown</td>
+                  <td>alice.b@example.com</td>
+                  <td>Farmer</td>
+                  <td><span class="badge bg-warning text-dark">Pending</span></td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post Management Section -->
+  <section class="mb-5 content-section" id="post-management-section">
+    <h2 class="mb-4">Post Management</h2>
+    <div class="card shadow-sm">
+      <div class="card-header bg-white text-dark d-flex justify-content-between align-items-center">
+        Blog Posts
+        <button class="btn btn-sm btn-success" onclick="togglePostForm(true)"><i class="bi bi-plus-lg me-1"></i> Add New Post</button>
+      </div>
+      <div class="card-body">
+        <!-- Add Post Form -->
+        <div id="addPostForm" class="form-container mb-4">
+          <h5 class="mb-3">Add New Post</h5>
+          <form>
+            <div class="mb-3">
+              <label for="postTitle" class="form-label">Title</label>
+              <input type="text" class="form-control" id="postTitle" placeholder="Post Title" required />
+            </div>
+            <div class="mb-3">
+              <label for="postCategory" class="form-label">Category</label>
+              <select class="form-select" id="postCategory" required>
+                <option selected disabled value="">Select a category...</option>
+                <option>Crop Planning</option>
+                <option>Water Management</option>
+                <option>Pest Control</option>
+                <option>Soil Health</option>
+                <option>Market Insights</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="postContent" class="form-label">Content</label>
+              <textarea class="form-control" id="postContent" rows="6" placeholder="Write your post content here..." required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="postThumbnail" class="form-label">Thumbnail Image</label>
+              <input type="file" class="form-control" id="postThumbnail" accept="image/*" />
+            </div>
+            <button type="submit" class="btn btn-primary me-2">Publish Post</button>
+            <button type="button" class="btn btn-secondary" onclick="togglePostForm(false)">Cancel</button>
+          </form>
+        </div>
+
+        <!-- Blog Posts Table -->
+        <div id="postsTable" class="table-container">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>Best Crops for June</td>
+                  <td>Crop Planning</td>
+                  <td>2025-06-15</td>
+                  <td><span class="badge bg-success">Published</span></td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>Improve Irrigation</td>
+                  <td>Water Management</td>
+                  <td>2025-06-10</td>
+                  <td><span class="badge bg-success">Published</span></td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td>Natural Pest Control</td>
+                  <td>Pest Control</td>
+                  <td>2025-06-01</td>
+                  <td><span class="badge bg-success">Published</span></td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service Management Section -->
+  <section class="mb-5 content-section" id="service-management-section">
+    <h2 class="mb-4">Service Management</h2>
+    <div class="card shadow-sm">
+      <div class="card-header bg-white text-dark d-flex justify-content-between align-items-center">
+        Services List
+        <button class="btn btn-sm btn-success"><i class="bi bi-plus-lg me-1"></i> Add New Service</button>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Service Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">1</th>
+                <td>Crop Planning</td>
+                <td>Personalized crop recommendations.</td>
+                <td><span class="badge bg-success">Active</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">2</th>
+                <td>Agri Advice</td>
+                <td>Expert guidance via WhatsApp/SMS.</td>
+                <td><span class="badge bg-success">Active</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">3</th>
+                <td>Sell Produce</td>
+                <td>Connect farmers to markets.</td>
+                <td><span class="badge bg-success">Active</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i> Edit</button>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analytics Section -->
+  <section class="mb-5 content-section" id="analytics-section">
+    <h2 class="mb-4">Analytics</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white text-dark fw-bold">Website Traffic</div>
+          <div class="card-body dashboard-chart-placeholder">
+            <p>Placeholder for Website Traffic Chart</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white text-dark fw-bold">User Engagement</div>
+          <div class="card-body dashboard-chart-placeholder">
+            <p>Placeholder for User Engagement Chart</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Settings Section -->
+  <section class="mb-5 content-section" id="settings-section">
+    <h2 class="mb-4">Settings</h2>
+    <div class="card shadow-sm">
+      <div class="card-header bg-white text-dark fw-bold">General Settings</div>
+      <div class="card-body">
+        <form>
+          <div class="mb-3">
+            <label for="siteName" class="form-label">Site Name</label>
+            <input type="text" class="form-control" id="siteName" value="AgroCare" />
+          </div>
+          <div class="mb-3">
+            <label for="adminEmail" class="form-label">Admin Email</label>
+            <input type="email" class="form-control" id="adminEmail" value="admin@agrocare.com" />
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" value="" id="enableRegistrations" checked>
+            <label class="form-check-label" for="enableRegistrations">
+              Enable User Registrations
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const desktopSidebarLinks = document.querySelectorAll('#adminSidebarDesktop .nav-link');
+        const offcanvasSidebarLinks = document.querySelectorAll('#adminSidebarOffcanvas .nav-link');
+        const allSections = document.querySelectorAll('.content-section');
+
+        function showSection(targetId) {
+            // Hide all sections
+            allSections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show the target section
+            const targetSection = document.querySelector(targetId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+        }
+
+        function setActiveLink(clickedLink) {
+            // Remove active class from all desktop links
+            desktopSidebarLinks.forEach(link => link.classList.remove('active'));
+            // Remove active class from all offcanvas links
+            offcanvasSidebarLinks.forEach(link => link.classList.remove('active'));
+
+            // Add active class to the clicked link
+            clickedLink.classList.add('active');
+
+            // Find and activate the corresponding link in the other sidebar (desktop or offcanvas)
+            const targetId = clickedLink.getAttribute('href');
+            if (clickedLink.closest('#adminSidebarDesktop')) { // If desktop link was clicked
+                offcanvasSidebarLinks.forEach(link => {
+                    if (link.getAttribute('href') === targetId) {
+                        link.classList.add('active');
+                    }
+                });
+            } else if (clickedLink.closest('#adminSidebarOffcanvas')) { // If offcanvas link was clicked
+                desktopSidebarLinks.forEach(link => {
+                    if (link.getAttribute('href') === targetId) {
+                        link.classList.add('active');
+                    }
+                });
+                // Close offcanvas after selection on mobile
+                const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('adminSidebarOffcanvas'));
+                if (offcanvas) {
+                    offcanvas.hide();
+                }
+            }
+        }
+
+        // Functions to toggle Add User Form/Table
+        window.toggleUserForm = function(showForm) {
+            const addUserForm = document.getElementById('addUserForm');
+            const usersTable = document.getElementById('usersTable');
+            if (showForm) {
+                addUserForm.style.display = 'block';
+                usersTable.style.display = 'none';
+            } else {
+                addUserForm.style.display = 'none';
+                usersTable.style.display = 'block';
+                // Optional: Clear form fields when canceling
+                document.getElementById('userName').value = '';
+                document.getElementById('userEmail').value = '';
+                document.getElementById('userRole').value = '';
+                document.getElementById('userPassword').value = '';
+            }
+        }
+
+        // Functions to toggle Add Post Form/Table
+        window.togglePostForm = function(showForm) {
+            const addPostForm = document.getElementById('addPostForm');
+            const postsTable = document.getElementById('postsTable');
+            if (showForm) {
+                addPostForm.style.display = 'block';
+                postsTable.style.display = 'none';
+            } else {
+                addPostForm.style.display = 'none';
+                postsTable.style.display = 'block';
+                // Optional: Clear form fields when canceling
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postCategory').value = '';
+                document.getElementById('postContent').value = '';
+                document.getElementById('postThumbnail').value = ''; // Clear file input
+            }
+        }
+
+
+        // Add click event listeners to desktop sidebar links
+        desktopSidebarLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default anchor jump
+                const targetId = this.getAttribute('href');
+                showSection(targetId);
+                setActiveLink(this);
+            });
+        });
+
+        // Add click event listeners to offcanvas sidebar links
+        offcanvasSidebarLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default anchor jump
+                const targetId = this.getAttribute('href');
+                showSection(targetId);
+                setActiveLink(this);
+            });
+        });
+
+        // Set initial active section and link on page load
+        // Check if there's a hash in the URL to load a specific section
+        const initialHash = window.location.hash || '#dashboard-overview-section';
+        showSection(initialHash);
+        // Find and activate the correct link based on the initial hash
+        const initialActiveLinkDesktop = document.querySelector(`#adminSidebarDesktop .nav-link[href="${initialHash}"]`);
+        const initialActiveLinkOffcanvas = document.querySelector(`#adminSidebarOffcanvas .nav-link[href="${initialHash}"]`);
+        if (initialActiveLinkDesktop) {
+            initialActiveLinkDesktop.classList.add('active');
+        }
+        if (initialActiveLinkOffcanvas) {
+            initialActiveLinkOffcanvas.classList.add('active');
+        }
+    });
+</script>
+
+</body>
+</html>
